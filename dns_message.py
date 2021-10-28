@@ -58,43 +58,35 @@ class Message():
         ARcount: 16 bit number of resource records in the additional records section
     """
 
-    def construct_header(self, identifier, qr, opcode, aa, tc, rd, ra, z, rcode, qdcount, ancount, nscount, arcount):
+    def construct_header(self, response_flag: bool, identifier, qr, opcode, aa, tc, rd, ra, z, rcode, qdcount, ancount, nscount, arcount):
         "Construct a header given all of the individual components."
+
         # Construct all the bytes individually and then string them together.
-        if type(identifier) is not bytes:
+        byte_3 = bytearray([(qr << 7) | (opcode << 3) |
+                        (aa << 2) | (tc << 1) | rd])
+
+        byte_4 = bytearray([ra << 7 | z << 4 | rcode])
+
+        an_upper, an_lower = divmod(ancount, 0x100)
+        byte_7_8 = bytearray([an_upper, an_lower])
+
+        ns_upper, ns_lower = divmod(nscount, 0x100)
+        byte_9_10 = bytearray([ns_upper, ns_lower])
+
+        ar_upper, ar_lower = divmod(arcount, 0x100)
+        byte_11_12 = bytearray([ar_upper, ar_lower])
+
+        if response_flag is False:
             id_upper, id_lower = divmod(identifier, 0x100)
             byte_1_2 = bytearray([id_upper, id_lower])
-        else:
-            byte_1_2 = identifier
 
-        byte_3 = bytearray([(qr << 7) | (opcode << 3) |
-                            (aa << 2) | (tc << 1) | rd])
-
-        byte_4 = bytearray([ra << 8 | z << 4 | rcode])
-
-        if type(qdcount) is not bytes:
             qd_upper, qd_lower = divmod(qdcount, 0x100)
             byte_5_6 = bytearray([qd_upper, qd_lower])
+
+            
         else:
+            byte_1_2 = identifier
             byte_5_6 = qdcount
-
-        if type(ancount) is not bytes:
-            an_upper, an_lower = divmod(ancount, 0x100)
-            byte_7_8 = bytearray([an_upper, an_lower])
-        else:
-            byte_7_8 = ancount
-
-        if type(nscount) is not bytes:
-            ns_upper, ns_lower = divmod(nscount, 0x100)
-            byte_9_10 = bytearray([ns_upper, ns_lower])
-        else:
-            byte_9_10 = nscount
-
-        if type(arcount) is not bytes:
-            ar_upper, ar_lower = divmod(arcount, 0x100)
-            byte_11_12 = bytearray([ar_upper, ar_lower])
-        else:
-            byte_11_12 = arcount
 
         self.header = byte_1_2 + byte_3 + byte_4 + \
             byte_5_6 + byte_7_8 + byte_9_10 + byte_11_12
@@ -118,7 +110,10 @@ class Message():
         # Construct response header
         qr = 1  # response flag
         aa = 0
-        ra = 0
+
+        # this is not true - but otherwise dig throws a warning
+        ra = 1
+
         ancount = 1  # number of responses is 1
         nscount = 0
         arcount = 0
@@ -131,7 +126,7 @@ class Message():
         else:
             rcode = 0
 
-        self.construct_header(identifier, qr, opcode, aa, tc,
+        self.construct_header(True, identifier, qr, opcode, aa, tc,
                               rd, ra, z, rcode, qdcount, ancount, nscount, arcount)
 
     def a_record_query_header(self):
@@ -149,7 +144,7 @@ class Message():
         nscount = 0
         arcount = 0
 
-        self.construct_header(identifier, qr, opcode, aa, tc, rd, ra, z, rcode,
+        self.construct_header(False, identifier, qr, opcode, aa, tc, rd, ra, z, rcode,
                               qdcount, ancount, nscount, arcount)
 
     """
@@ -192,6 +187,21 @@ class Message():
         qtype = 1
         qclass = 1
         self.construct_question(url, qtype, qclass)
+
+    def parse_query_question(self, query):
+        """Find the end of the question section given a request."""
+        search = True
+        i = 12
+        while search is True:
+            length = int(query[i])
+            i = i + length + 1
+            if length is 0:
+                search = False
+                i = i + 4
+        
+        stop = i + 12
+        print(stop)
+        return i
 
     """
     The DNS response answer section has the following format (resource record):
@@ -241,7 +251,10 @@ class Message():
 
     def send_response(self, request, address):
         self.a_record_response_header(request)
+        question_stop = self.parse_query_question(request)
         self.a_record_response_answer()
-        self.packet = self.header + request[12:] + self.answer
+
+        # self.packet = self.header + request[12:25] + self.answer
+        self.packet = self.header + request[12 : question_stop] + self.answer
         self.socket.sendto(self.packet, address)
         print("Response: ", self.packet)
