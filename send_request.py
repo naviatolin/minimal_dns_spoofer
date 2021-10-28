@@ -7,9 +7,9 @@ def main():
     query.send_query('foo.com')
 
     response, address = query.receive()
+    print(response)
 
     query.socket.close()
-    print(response)
 
 
 if __name__ == '__main__':

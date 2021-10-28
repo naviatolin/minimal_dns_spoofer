@@ -243,9 +243,5 @@ class Message():
         self.a_record_response_header(request)
         self.a_record_response_answer()
         self.packet = self.header + request[12:] + self.answer
-        print("Response: ", self.packet)
         self.socket.sendto(self.packet, address)
-        print(self.address)
-        print(self.port)
-        time.sleep(1)
-        # self.socket.close()
+        print("Response: ", self.packet)

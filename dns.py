@@ -11,8 +11,7 @@ while True:
 
     except response.socket.timeout:
         continue
+
     finally:
         print('Got {} bytes from {}'.format(len(query), address))
         response.send_response(query, address)
-        # response.start_socket()
-        # response.bind()
