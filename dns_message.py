@@ -418,6 +418,7 @@ class Message():
             self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         except socket.error as e:
             print("Error creating socket: %s", e, file=sys.stderr)
+            sys.exit(-1)
 
     def bind(self):
         """
@@ -427,6 +428,7 @@ class Message():
             self.socket.bind((self.address, self.port))
         except socket.error as e:
             print("Error binding socket: %s", e, file=sys.stderr)
+            sys.exit(-1)
 
     def send_query(self, url: str):
         """
@@ -447,6 +449,7 @@ class Message():
             self.socket.sendto(packet, (self.address, self.port))
         except socket.error as e:
             print("Error sending packet: %s", e, file=sys.stderr)
+            sys.exit(-1)
 
     def receive(self):
         """
@@ -486,3 +489,4 @@ class Message():
             self.socket.sendto(packet, address)
         except socket.error as e:
             print("Error sending packet: %s", e, file=sys.stderr)
+            sys.exit(-1)
