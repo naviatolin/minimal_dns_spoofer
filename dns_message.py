@@ -1,6 +1,7 @@
 """ A class for constructing a DNS messages for A record requests. """
 
 import socket
+import sys
 
 # Source for DNS packet construction information: https://datatracker.ietf.org/doc/html/rfc1035#page-26
 
@@ -413,13 +414,19 @@ class Message():
         """
         Starts a socket for IPv4.
         """
-        self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        try:
+            self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        except socket.error as e:
+            print("Error creating socket: %s", e, file=sys.stderr)
 
     def bind(self):
         """
         Binds a socket to a specific address and port.
         """
-        self.socket.bind((self.address, self.port))
+        try:
+            self.socket.bind((self.address, self.port))
+        except socket.error as e:
+            print("Error binding socket: %s", e, file=sys.stderr)
 
     def send_query(self, url: str):
         """
@@ -436,7 +443,10 @@ class Message():
 
         # Construct the packet and sent it
         packet = header + question
-        self.socket.sendto(packet, (self.address, self.port))
+        try:
+            self.socket.sendto(packet, (self.address, self.port))
+        except socket.error as e:
+            print("Error sending packet: %s", e, file=sys.stderr)
 
     def receive(self):
         """
@@ -449,7 +459,10 @@ class Message():
         address : int
             address the data was received from
         """
-        data, address = self.socket.recvfrom(4096)
+        try:
+            data, address = self.socket.recvfrom(4096)
+        except socket.error as e:
+            print("Error receiving data: %s", e, file=sys.stderr)
         return data, address
 
     def send_response(self, request, address):
@@ -468,4 +481,8 @@ class Message():
         answer = self.a_record_response_answer()
 
         packet = header + request[12: question_stop] + answer
-        self.socket.sendto(packet, address)
+
+        try:
+            self.socket.sendto(packet, address)
+        except socket.error as e:
+            print("Error sending packet: %s", e, file=sys.stderr)
