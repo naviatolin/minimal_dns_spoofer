@@ -8,5 +8,5 @@ start:
 check:
 	pytest src/test.py -v
 
-make stop: 
+stop: 
 	sudo pkill -9 -f src/dns.py
