@@ -1,15 +1,12 @@
 
 # Minimal DNS Spoofer
------------------------
 A minimal DNS spoofing daemon that listens on the DNS port for an A record request and returns a fixed, hard coded address of ```6.6.6.6```. This project only uses standard POSIX socket functions.
 
 ## Setup
----------
 To setup necessary libraries run:
 ```make install```
 
 ## Running the Daemon
----------------------
 To launch the DNS spoofing daemon on localhost, run:
 ```make start```
 
@@ -20,7 +17,6 @@ To kill the DNS spoofing daemon, run:
 ```make stop```
 
 ## Tests
---------
 To run tests, run:
 ```make check```
 
