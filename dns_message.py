@@ -296,7 +296,8 @@ class Message():
         """
         qtype = 1
         qclass = 1
-        self._construct_question(url, qtype, qclass)
+        question = self._construct_question(url, qtype, qclass)
+        return question
 
     def _construct_question(self, url: str, qtype: int, qclass: int) -> bytearray:
         """
@@ -435,7 +436,7 @@ class Message():
 
         # Construct the packet and sent it
         packet = header + question
-        self.socket.sendto(self.packet, (self.address, self.port))
+        self.socket.sendto(packet, (self.address, self.port))
 
     def receive(self):
         """

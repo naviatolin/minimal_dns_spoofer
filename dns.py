@@ -1,5 +1,6 @@
 """ Listen on the DNS port for any A record request and return a fixed hard coded address. """
 from dns_message import Message
+import argparse
 import daemon
 
 def main(socket_address: str = '127.0.0.1'):
@@ -28,15 +29,25 @@ def main(socket_address: str = '127.0.0.1'):
             response.send_response(query, address)
 
 
-def launch_daemon():
+def launch_daemon(socket_address: str = '127.0.0.1'):
     """
     Launch a daemon running the process in main().
+
+    Parameters
+    ----------
+    socket_address : str
+        string of ipv4 address, set to 127.0.0.1 if none entered
     """
     with daemon.DaemonContext():
         print("Launched daemon")
-        main()
+        main(socket_address)
 
 
 if __name__ == '__main__':
+    # Parse for an IPv4 address following the 
+    parser = argparse.ArgumentParser(description='Minimal DNS Spoofer.')
+    parser.add_argument('-address', type=str, default="127.0.0.1", help='address for the DNS socket')
+    args = parser.parse_args()
+
     # launch_daemon()
-    main()
+    main(args.address)
