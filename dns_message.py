@@ -48,13 +48,13 @@ class Message():
     bind()
         Binds a socket to a specific address and port.
 
-    send_query()
+    send_query(url)
         Given a URL construct a A record request and send it.
 
     receive()
         Receive data from a socket.
 
-    send_response()
+    send_response(request, address)
         Construct a DNS response and send it to the same address the request was received from.
     """
 
