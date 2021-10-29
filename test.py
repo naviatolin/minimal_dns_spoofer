@@ -1,14 +1,31 @@
 import pytest
-
-# ---------------------------------------------------------------------------- #
-#                              Testing DNS Message                             #
-# ---------------------------------------------------------------------------- #
-
 from dns_message import Message
 
-dns = Message(socket_address, 53)
+dns = Message("127.0.0.1", 1024)
 dns.start_socket()
 dns.bind()
 
+# --------------------- Test One DNS Request and Response -------------------- #
+# Case pulled from: https://routley.io/posts/hand-writing-dns-messages/
+
 def test_query_header_1():
-    assert ()
+    header = bytearray([0xAA, 0xBB, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0])
+    assert dns.a_record_query_header() == header
+
+request = bytearray([0xAA, 0xBB, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0x07, 0x65, 0x78, 0x61, 0x6D, 0x70, 0x6C, 0x65, 0x03, 0x63, 0x6F, 0x6D, 0x00, 0x00, 0x01, 0x00, 0x01, 0x01, 0x02, 0x03, 0x04])
+
+def test_response_header():
+    header = bytearray([0xAA, 0xBB, 0x81, 0x80, 0x00, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00])
+    assert dns.a_record_response_header(request) == header
+
+def test_query_question():
+    question = bytearray([0x07, 0x65, 0x78, 0x61, 0x6D, 0x70, 0x6C, 0x65, 0x03, 0x63, 0x6F, 0x6D, 0x00, 0x00, 0x01, 0x00, 0x01])
+    assert dns.a_record_query_question("example.com") == question
+
+def test_parse_query_question():
+    assert dns.parse_query_question(request) == 29
+
+def test_response_answer():
+    response = bytearray([0xC0, 0x0C, 0x00, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x04, 0x06, 0x06, 0x06, 0x06])
+    assert dns.a_record_response_answer() == response
+    
