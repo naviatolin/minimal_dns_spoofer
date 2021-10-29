@@ -2,6 +2,7 @@
 from dns_message import Message
 import argparse
 import daemon
+from daemon import pidfile
 
 def main(socket_address: str = '127.0.0.1'):
     """
@@ -44,10 +45,10 @@ def launch_daemon(socket_address: str = '127.0.0.1'):
 
 
 if __name__ == '__main__':
-    # Parse for an IPv4 address following the 
     parser = argparse.ArgumentParser(description='Minimal DNS Spoofer.')
-    parser.add_argument('-address', type=str, default="127.0.0.1", help='address for the DNS socket')
+    parser.add_argument('-address', type=str,
+                        default="127.0.0.1", help='address for the DNS socket')
+
     args = parser.parse_args()
 
-    # launch_daemon()
-    main(args.address)
+    launch_daemon(args.address)

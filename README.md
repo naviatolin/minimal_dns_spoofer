@@ -1,28 +1,49 @@
 
-DNS Spoofing assignment
-------------------------------------
-Please write a minimal DNS spoofing daemon for Linux that listens
-on the DNS port for any A record request (e.g. foo.com) and returns a
-fixed, hard coded address (e.g. 6.6.6.6). Please utilize standard POSIX
-socket functions (like open, bind, recvfrom, and sendto) and a
-straight-forward approach.
+# Minimal DNS Spoofer
+-----------------------
+A minimal DNS spoofing daemon that listens on the DNS port for an A record request and returns a fixed, hard coded address of ```6.6.6.6```. This project only uses standard POSIX socket functions.
 
-You will be evaluated on the 
-- quality of the code 
-- functionality.
-- proper error handling
-- commenting
-- unit testing, etc. 
-Any online references should be cited; be aware that we expect the code to be *your* code.
+## Setup
+---------
+To setup necessary libraries run:
+```make install```
 
-Example testing steps:
+## Running the Daemon
+---------------------
+To launch the DNS spoofing daemon on localhost, run:
+```make start```
 
-linux box 1:
-    # cd your-program-directory    # make    # make check       # we'd love to see at least one test here :)    # ./your-program
+If you want to launch the daemon on a different IPv4 address, run:
+```make start ADDRESS={any other address}```
 
-linux box 2:
-    # dig @linux-box-1 foo.com
-    
-expected response:
-Something like...
-    ; <<>> DiG 9.6.1-P2 <<>> @192.168.1.1 foo.com    ; (1 server found)    ;; global options: +cmd    ;; Got answer:    ;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 27387    ;; flags: qr rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 0, ADDITIONAL: 0    ;; QUESTION SECTION:    ;foo.com.                       IN      A    ;; ANSWER SECTION:    foo.com.                3600    IN      A 6.6.6.6    ;; Query time: 58 msec    ;; SERVER: 192.168.1.1#53(192.168.1.1)    ;; WHEN: Fri Jan  8 13:23:22 2010    ;; MSG SIZE  rcvd: 41
+To kill the DNS spoofing daemon, run:
+```make stop```
+
+## Tests
+--------
+To run tests, run:
+```make check```
+
+Once the daemon is running, you can also test using dig. For example:
+```dig @127.0.0.1 google.com```
+
+You will see the DNS spoofer return 6.6.6.6 each time. Corresponding Response:
+```
+; <<>> DiG 9.10.6 <<>> @127.0.0.1 google.com
+; (1 server found)
+;; global options: +cmd
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 63867
+;; flags: qr rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 0, ADDITIONAL: 0
+
+;; QUESTION SECTION:
+;google.com.                    IN      A
+
+;; ANSWER SECTION:
+google.com.             0       IN      A       6.6.6.6
+
+;; Query time: 0 msec
+;; SERVER: 127.0.0.1#53(127.0.0.1)
+;; WHEN: Fri Oct 29 12:51:41 EDT 2021
+;; MSG SIZE  rcvd: 44
+```
