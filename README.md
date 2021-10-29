@@ -7,10 +7,13 @@ fixed, hard coded address (e.g. 6.6.6.6). Please utilize standard POSIX
 socket functions (like open, bind, recvfrom, and sendto) and a
 straight-forward approach.
 
-You will be evaluated on the quality of the code as well as its functionality.
-We want to see proper error handling, commenting, unit testing, etc. Any
-online references should be cited; be aware that we expect the code to be
-*your* code.
+You will be evaluated on the 
+- quality of the code 
+- functionality.
+- proper error handling
+- commenting
+- unit testing, etc. 
+Any online references should be cited; be aware that we expect the code to be *your* code.
 
 Example testing steps:
 
