@@ -24,7 +24,7 @@ class Message():
     a_record_query_header()
         Generates a predetermined A record request header.
 
-    a_record_response_header(request)
+    a_record_response_header(request, implemented)
         Generates a DNS response header based on a provided A record request.
 
     _construct_header(self, response_flag, identifier, qr, opcode, 
@@ -151,7 +151,7 @@ class Message():
     The DNS response header follows the same format as the query header.
     """
 
-    def a_record_response_header(self, request: bytearray) -> bytearray:
+    def a_record_response_header(self, request: bytearray, implemented: bool) -> bytearray:
         """
         Generate a header for a DNS response.
 
@@ -159,6 +159,8 @@ class Message():
         ----------
         request : bytearray
             received DNS query
+        implemented : bool
+            flag indicating if a response for this type of request is implemented
 
         Returns
         -------
@@ -346,6 +348,7 @@ class Message():
     def parse_query_question(self, query: bytearray) -> int:
         """
         Find the index to the end of the question section given a request.
+        Additionally, determine if the request is an A record and internet class.
 
         Parameters
         ----------
@@ -356,6 +359,7 @@ class Message():
         -------
         i : int
             ending index to the question section of the index
+            returns 0 if the request is not an A record internet class request
         """
 
         search = True
@@ -369,7 +373,11 @@ class Message():
                 search = False
                 i = i + 4
         stop = i + 12
-        return i
+
+        if int(query[i-1]) is 1 and int(query[i-3]) is 1:
+            return i
+        else:
+            return 0
 
     """
     The DNS response answer section has the following format (resource record):
@@ -479,14 +487,20 @@ class Message():
         address : int
             address the request was received from
         """
-        header = self.a_record_response_header(request)
         question_stop = self.parse_query_question(request)
+        
+        if question_stop is 0:
+            header = self.a_record_response_header(request, False)
+        else:
+            header = self.a_record_response_header(request, True)
+
         answer = self.a_record_response_answer()
 
         packet = header + request[12: question_stop] + answer
 
         try:
             self.socket.sendto(packet, address)
+
         except socket.error as e:
             print("Error sending packet: %s", e, file=sys.stderr)
             sys.exit(-1)
